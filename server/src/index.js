@@ -1,0 +1,17 @@
+import { createServer } from "http";
+import { server } from "socket.io";
+
+const httpServer=createServer();
+const io=new Server(httpServer,{
+    cors:{
+        origin: "http://localhost:3000",
+        methods:["GET", "POST"],
+    },
+});
+
+io.on("connection",async(socket)=>{
+//socket events
+});
+
+console.log("Listening to port...");
+httpServer.listen(process.env.PORT || 4000);
