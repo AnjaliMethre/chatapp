@@ -1,6 +1,6 @@
 import React from 'react'
 
-const chatHeader = ({user}) => {
+const ChatHeader = ({user}) => {
   return (
     
      <div className="align-items-start py-2 px-4 w-100 border-bottom border-info d-lg-block sticky-top bg-white">
@@ -22,4 +22,4 @@ const chatHeader = ({user}) => {
   )
 }
 
-export default chatHeader
+export default ChatHeader
