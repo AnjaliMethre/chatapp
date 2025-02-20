@@ -10,47 +10,72 @@ const io=new Server(httpServer,{
     },
 });
 
-io.use((socket, next)=>{
+io.use((socket, next) => {
+    console.log("🔵 Middleware triggered: Checking username...");
     const username = socket.handshake.auth.username;
-    if(!username){
+    console.log("Received username:", username);
+
+    if (!username) {
+        console.log("❌ Connection rejected: Invalid username");
         return next(new Error("Invalid username"));
     }
-    socket.username = username; 
+
+    socket.username = username;
     socket.userId = uuidv4();
+    console.log(`✅ Connection accepted: User ${socket.username} with ID ${socket.userId}`);
+
     next();
 });
+io.on("connection", async (socket) => {
+    console.log(`🔵 New user connected: ${socket.username}`);
 
-io.on("connection",async(socket)=>{
-//socket events
-const users = [];
-for(let [id,socket] of io.of("/").sockets){
-    users.push({
-        userId: socket.userId,
-        username: socket.username,
-    });
-}
+    // Fetch all connected users
+    const users = [];
+    for (let [id, userSocket] of io.of("/").sockets) {
+        users.push({
+            userId: userSocket.userId,
+            username: userSocket.username,
+        });
+    }
 
-//all are users event
-socket.emit("users",users);
+    console.log(`📋 Current connected users:`, users.map(user => user.username));
 
-//connected user details event
-socket.emit("session", { userId: socket.userId, username: socket.username });
+    // Send the connected users list to the new user
+    socket.emit("users", users);
+    console.log(`📤 Sent users list to: ${socket.username}`);
 
-//new user event
+    // Send session details to the new user
+    socket.emit("session", { userId: socket.userId, username: socket.username });
+    console.log(`📤 Sent session details to: ${socket.username} (ID: ${socket.userId})`);
+
+    // Notify other users about the new connection
     socket.broadcast.emit("user connected", {
         userId: socket.userId,
         username: socket.username
     });
+    console.log(`📢 Broadcasted that ${socket.username} joined the chat`);
 
-    //new message event
-    socket.on("new message",(message)=>{
+    // Handle new message event
+    socket.on("new message", (message) => {
+        console.log(`💬 New message from ${socket.username}: "${message}"`);
+
+        // Broadcast the message to all users except the sender
         socket.broadcast.emit("new message", {
             userId: socket.userId,
-            username:socket.username,
+            username: socket.username,
             message,
         });
+
+        console.log(`📢 Message broadcasted: "${message}" from ${socket.username}`);
+    });
+
+    // Handle user disconnect event
+    socket.on("disconnect", () => {
+        console.log(`❌ User disconnected: ${socket.username}`);
     });
 });
+
+   
 
 console.log("Listening to port...");
 httpServer.listen(process.env.PORT || 4000);
