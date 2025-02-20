@@ -18,9 +18,13 @@ const Login = ({ newUser, setNewUser, logNewUser })=>{
                   autoComplete="off"
                  // onChange={(e)=>handleChange(e)}
                  onChange={({ currentTarget:input })=>setNewUser(input.value)}
-                  onKeyPress={(e)=>(e.code === "Enter" ? logNewUser() : null )}
+                  //onKeyPress={(e)=>(e.code === "Enter" ? logNewUser() : null )}
+                  onKeyDown={(e) => (e.key === "Enter" ? logNewUser() : null)}
+
                 />
-                <button className="btn btn-success w-100" onClick={()=>logNewUser()}>Join!</button>
+                <button className="btn btn-success w-100" onClick={()=>{console.log("Join button clicked. Calling logNewUser...");
+                  logNewUser();
+                }}>Join!</button>
               </div>
               
             </div>
